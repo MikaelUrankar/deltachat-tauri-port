@@ -1,0 +1,22 @@
+--- cargo-crates/tao-0.34.5/src/event_loop.rs.orig	2006-07-24 03:21:28 UTC
++++ cargo-crates/tao-0.34.5/src/event_loop.rs
+@@ -296,7 +296,7 @@ impl<T> EventLoopWindowTarget<T> {
+   /// - **iOS / Android:** Unsupported.
+   #[inline]
+   pub fn set_progress_bar(&self, _progress: ProgressBarState) {
+-    #[cfg(any(target_os = "linux", target_os = "macos"))]
++    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd"))]
+     self.p.set_progress_bar(_progress)
+   }
+ 
+--- cargo-crates/tao-0.34.5/src/window.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/tao-0.34.5/src/window.rs	2026-03-19 09:14:32.210594000 +0100
+@@ -1225,7 +1225,7 @@ impl Window {
+   ///
+   /// - **iOS / Android / Windows:** Unsupported.
+   pub fn set_visible_on_all_workspaces(&self, #[allow(unused)] visible: bool) {
+-    #[cfg(any(target_os = "macos", target_os = "linux"))]
++    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "freebsd"))]
+     self.window.set_visible_on_all_workspaces(visible)
+   }
+ 

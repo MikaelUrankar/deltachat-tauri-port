@@ -1,0 +1,96 @@
+--- cargo-crates/tauri-2.9.4/src/app.rs.orig	2006-07-24 03:21:28 UTC
++++ cargo-crates/tauri-2.9.4/src/app.rs
+@@ -1375,7 +1375,7 @@ pub struct Builder<R: Runtime> {
+ #[allow(clippy::type_complexity)]
+ pub struct Builder<R: Runtime> {
+   /// A flag indicating that the runtime must be started on an environment that supports the event loop not on the main thread.
+-  #[cfg(any(windows, target_os = "linux"))]
++  #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
+   runtime_any_thread: bool,
+ 
+   /// The JS message handler.
+@@ -1463,7 +1463,7 @@ impl<R: Runtime> Builder<R> {
+     let invoke_key = crate::generate_invoke_key().unwrap();
+ 
+     Self {
+-      #[cfg(any(windows, target_os = "linux"))]
++      #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
+       runtime_any_thread: false,
+       setup: Box::new(|_| Ok(())),
+       invoke_handler: Box::new(|_| false),
+@@ -1502,8 +1502,8 @@ impl<R: Runtime> Builder<R> {
+   /// ## Platform-specific
+   ///
+   /// - **macOS:** on macOS the application *must* be executed on the main thread, so this function is not exposed.
+-  #[cfg(any(windows, target_os = "linux"))]
+-  #[cfg_attr(docsrs, doc(cfg(any(windows, target_os = "linux"))))]
++  #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
++  #[cfg_attr(docsrs, doc(cfg(any(windows, target_os = "linux", target_os = "freebsd"))))]
+   #[must_use]
+   pub fn any_thread(mut self) -> Self {
+     self.runtime_any_thread = true;
+@@ -2185,13 +2185,13 @@ tauri::Builder::default()
+       }
+     }
+ 
+-    #[cfg(any(windows, target_os = "linux"))]
++    #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
+     let mut runtime = if self.runtime_any_thread {
+       R::new_any_thread(runtime_args)?
+     } else {
+       R::new(runtime_args)?
+     };
+-    #[cfg(not(any(windows, target_os = "linux")))]
++    #[cfg(not(any(windows, target_os = "linux", target_os = "freebsd")))]
+     let mut runtime = R::new(runtime_args)?;
+ 
+     #[cfg(desktop)]
+
+--- cargo-crates/tauri-2.9.4/src/manager/webview.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/tauri-2.9.4/src/manager/webview.rs	2026-03-19 09:09:59.559767000 +0100
+@@ -504,7 +504,7 @@ impl<R: Runtime> WebviewManager<R> {
+ 
+     // in `windows`, we need to force a data_directory
+     // but we do respect user-specification
+-    #[cfg(any(target_os = "linux", target_os = "windows"))]
++    #[cfg(any(target_os = "linux", target_os = "windows", target_os = "freebsd"))]
+     if pending.webview_attributes.data_directory.is_none() {
+       let local_app_data = manager.path().resolve(
+         &app_manager.config.identifier,
+
+--- cargo-crates/tauri-2.9.4/src/tray/mod.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/tauri-2.9.4/src/tray/mod.rs	2026-03-19 09:31:56.592843000 +0100
+@@ -562,7 +562,7 @@ impl<R: Runtime> TrayIcon<R> {
+   pub fn set_temp_dir_path<P: AsRef<Path>>(&self, path: Option<P>) -> crate::Result<()> {
+     #[allow(unused)]
+     let p = path.map(|p| p.as_ref().to_path_buf());
+-    #[cfg(target_os = "linux")]
++    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+     run_item_main_thread!(self, |self_: Self| self_.inner.set_temp_dir_path(p))?;
+     Ok(())
+   }
+
+--- cargo-crates/tauri-2.9.4/src/webview/mod.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/tauri-2.9.4/src/webview/mod.rs	2026-03-19 09:07:39.705353000 +0100
+@@ -1548,7 +1548,7 @@ tauri::Builder::default()
+   .setup(|app| {
+     let main_webview = app.get_webview("main").unwrap();
+     main_webview.with_webview(|webview| {
+-      #[cfg(target_os = "linux")]
++      #[cfg(any(target_os = "linux"), target_os = "freebsd"))]
+       {
+         // see <https://docs.rs/webkit2gtk/2.0.0/webkit2gtk/struct.WebView.html>
+         // and <https://docs.rs/webkit2gtk/2.0.0/webkit2gtk/trait.WebViewExt.html>
+
+--- cargo-crates/tauri-2.9.4/src/window/mod.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/tauri-2.9.4/src/window/mod.rs	2026-03-19 09:06:27.818961000 +0100
+@@ -2208,7 +2208,7 @@ tauri::Builder::default()
+ #[cfg(desktop)]
+ #[cfg_attr(
+   docsrs,
+-  doc(cfg(any(target_os = "macos", target_os = "linux", windows)))
++  doc(cfg(any(target_os = "macos", target_os = "linux", windows, target_os = "freebsd")))
+ )]
+ #[derive(serde::Deserialize, Debug)]
+ pub struct ProgressBarState {
+
