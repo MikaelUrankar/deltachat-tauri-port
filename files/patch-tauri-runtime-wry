@@ -1,0 +1,38 @@
+--- cargo-crates/tauri-runtime-wry-2.9.2/src/lib.rs.orig	2006-07-24 03:21:28 UTC
++++ cargo-crates/tauri-runtime-wry-2.9.2/src/lib.rs
+@@ -35,7 +35,7 @@ use tao::platform::macos::{EventLoopWindowTargetExtMac
+ use objc2::rc::Retained;
+ #[cfg(target_os = "macos")]
+ use tao::platform::macos::{EventLoopWindowTargetExtMacOS, WindowBuilderExtMacOS};
+-#[cfg(target_os = "linux")]
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ use tao::platform::unix::{WindowBuilderExtUnix, WindowExtUnix};
+ #[cfg(windows)]
+ use tao::platform::windows::{WindowBuilderExtWindows, WindowExtWindows};
+@@ -858,7 +858,7 @@ impl WindowBuilder for WindowBuilderWrapper {
+       ");
+     }
+ 
+-    #[cfg(target_os = "linux")]
++    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+     {
+       // Mouse event is disabled on Linux since sudden event bursts could block event loop.
+       window.inner = window.inner.with_cursor_moved_event(false);
+@@ -1190,7 +1190,7 @@ impl WindowBuilder for WindowBuilderWrapper {
+     self
+   }
+ 
+-  #[cfg(any(windows, target_os = "linux"))]
++  #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
+   fn skip_taskbar(mut self, skip: bool) -> Self {
+     self.inner = self.inner.with_skip_taskbar(skip);
+     self
+@@ -3401,7 +3401,7 @@ fn handle_user_message<T: UserEvent>(
+           }
+           #[allow(unused_variables)]
+           WindowMessage::SetSkipTaskbar(skip) => {
+-            #[cfg(any(windows, target_os = "linux"))]
++            #[cfg(any(windows, target_os = "linux", target_os = "freebsd"))]
+             let _ = window.set_skip_taskbar(skip);
+           }
+           WindowMessage::SetCursorGrab(grab) => {

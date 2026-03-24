@@ -1,0 +1,199 @@
+--- cargo-crates/muda-0.17.1/Cargo.toml.orig	2026-03-24 09:25:32 UTC
++++ cargo-crates/muda-0.17.1/Cargo.toml
+@@ -99,6 +99,14 @@ optional = true
+ version = "0.6.0"
+ optional = true
+ 
++[target.'cfg(target_os = "freebsd")'.dependencies.gtk]
++version = "0.18"
++optional = true
++
++[target.'cfg(target_os = "freebsd")'.dependencies.libxdo]
++version = "0.6.0"
++optional = true
++
+ [target.'cfg(target_os = "macos")'.dependencies.objc2]
+ version = "0.6.0"
+ 
+--- cargo-crates/muda-0.17.1/src/error.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/muda-0.17.1/src/error.rs	2026-03-19 08:50:47.132099000 +0100
+@@ -15,13 +15,13 @@ pub enum Error {
+     #[cfg(windows)]
+     #[error("This menu has not been initialized for this hwnd`")]
+     NotInitialized,
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     #[error("This menu has not been initialized for this gtk window`")]
+     NotInitialized,
+     #[cfg(windows)]
+     #[error("This menu has already been initialized for this hwnd`")]
+     AlreadyInitialized,
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     #[error("This menu has already been initialized for this gtk window`")]
+     AlreadyInitialized,
+     #[error(transparent)]
+
+--- cargo-crates/muda-0.17.1/src/items/submenu.rs.orig	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/muda-0.17.1/src/items/submenu.rs	2026-03-19 08:50:19.324854000 +0100
+@@ -248,7 +248,7 @@ impl ContextMenu for Submenu {
+         self.inner.borrow().detach_menu_subclass_from_hwnd(hwnd)
+     }
+ 
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn show_context_menu_for_gtk_window(
+         &self,
+         w: &gtk::Window,
+@@ -259,7 +259,7 @@ impl ContextMenu for Submenu {
+             .show_context_menu_for_gtk_window(w, position)
+     }
+ 
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn gtk_context_menu(&self) -> gtk::Menu {
+         self.inner.borrow_mut().gtk_context_menu()
+     }
+
+--- cargo-crates/muda-0.17.1/src/lib.rs	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/muda-0.17.1/src/lib.rs	2026-03-19 08:56:19.355806000 +0100
+@@ -77,14 +77,14 @@
+ //! ```no_run
+ //! # let menu = muda::Menu::new();
+ //! # let window_hwnd = 0;
+-//! # #[cfg(target_os = "linux")]
++//! # #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ //! # let gtk_window = gtk::Window::builder().build();
+-//! # #[cfg(target_os = "linux")]
++//! # #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ //! # let vertical_gtk_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
+ //! // --snip--
+ //! #[cfg(target_os = "windows")]
+ //! unsafe { menu.init_for_hwnd(window_hwnd) };
+-//! #[cfg(target_os = "linux")]
++//! # #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ //! menu.init_for_gtk_window(&gtk_window, Some(&vertical_gtk_box));
+ //! #[cfg(target_os = "macos")]
+ //! menu.init_for_nsapp();
+@@ -98,7 +98,7 @@
+ //! use muda::ContextMenu;
+ //! # let menu = muda::Menu::new();
+ //! # let window_hwnd = 0;
+-//! # #[cfg(target_os = "linux")]
++//! # #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ //! # let gtk_window = gtk::Window::builder().build();
+ //! # #[cfg(target_os = "macos")]
+ //! # let nsview = std::ptr::null();
+@@ -106,7 +106,7 @@
+ //! let position = muda::dpi::PhysicalPosition { x: 100., y: 120. };
+ //! #[cfg(target_os = "windows")]
+ //! unsafe { menu.show_context_menu_for_hwnd(window_hwnd, Some(position.into())) };
+-//! #[cfg(target_os = "linux")]
++//! #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+ //! menu.show_context_menu_for_gtk_window(&gtk_window, Some(position.into()));
+ //! #[cfg(target_os = "macos")]
+ //! unsafe { menu.show_context_menu_for_nsview(nsview, Some(position.into())) };
+@@ -375,7 +375,7 @@ pub trait ContextMenu {
+     /// Returns `true` if menu tracking ended because an item was selected or clicked outside the menu to dismiss it.
+     ///
+     /// Returns `false` if menu tracking was cancelled for any reason.
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn show_context_menu_for_gtk_window(
+         &self,
+         w: &gtk::Window,
+@@ -385,7 +385,7 @@ pub trait ContextMenu {
+     /// Get the underlying gtk menu reserved for context menus.
+     ///
+     /// The returned [`gtk::Menu`] is valid as long as the `ContextMenu` is.
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn gtk_context_menu(&self) -> gtk::Menu;
+ 
+     /// Shows this menu as a context menu for the specified `NSView`.
+
+--- cargo-crates/muda-0.17.1/src/menu.rs	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/muda-0.17.1/src/menu.rs	2026-03-19 08:54:47.511789000 +0100
+@@ -182,7 +182,7 @@ impl Menu {
+     /// ## Panics:
+     ///
+     /// Panics if the gtk event loop hasn't been initialized on the thread.
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     pub fn init_for_gtk_window<W, C>(&self, window: &W, container: Option<&C>) -> crate::Result<()>
+     where
+         W: gtk::prelude::IsA<gtk::Window>,
+@@ -270,7 +270,7 @@ impl Menu {
+     }
+ 
+     /// Removes this menu from a [`gtk::Window`]
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     pub fn remove_for_gtk_window<W>(&self, window: &W) -> crate::Result<()>
+     where
+         W: gtk::prelude::IsA<gtk::Window>,
+@@ -289,7 +289,7 @@ impl Menu {
+     }
+ 
+     /// Hides this menu from a [`gtk::Window`]
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     pub fn hide_for_gtk_window<W>(&self, window: &W) -> crate::Result<()>
+     where
+         W: gtk::prelude::IsA<gtk::Window>,
+@@ -308,7 +308,7 @@ impl Menu {
+     }
+ 
+     /// Shows this menu on a [`gtk::Window`]
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     pub fn show_for_gtk_window<W>(&self, window: &W) -> crate::Result<()>
+     where
+         W: gtk::prelude::IsA<gtk::Window>,
+@@ -327,7 +327,7 @@ impl Menu {
+     }
+ 
+     /// Returns whether this menu visible on a [`gtk::Window`]
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     pub fn is_visible_on_gtk_window<W>(&self, window: &W) -> bool
+     where
+         W: gtk::prelude::IsA<gtk::Window>,
+@@ -335,7 +335,7 @@ impl Menu {
+         self.inner.borrow().is_visible_on_gtk_window(window)
+     }
+ 
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     /// Returns the [`gtk::MenuBar`] that is associated with this window if it exists.
+     /// This is useful to get information about the menubar for example its height.
+     pub fn gtk_menubar_for_gtk_window<W>(self, window: &W) -> Option<gtk::MenuBar>
+@@ -391,7 +391,7 @@ impl ContextMenu for Menu {
+         self.inner.borrow().detach_menu_subclass_from_hwnd(hwnd)
+     }
+ 
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn show_context_menu_for_gtk_window(
+         &self,
+         window: &gtk::Window,
+@@ -402,7 +402,7 @@ impl ContextMenu for Menu {
+             .show_context_menu_for_gtk_window(window, position)
+     }
+ 
+-    #[cfg(all(target_os = "linux", feature = "gtk"))]
++    #[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+     fn gtk_context_menu(&self) -> gtk::Menu {
+         self.inner.borrow_mut().gtk_context_menu()
+     }
+--- cargo-crates/muda-0.17.1/src/platform_impl/mod.rs	2006-07-24 03:21:28.000000000 +0200
++++ cargo-crates/muda-0.17.1/src/platform_impl/mod.rs	2026-03-19 08:55:07.910891000 +0100
+@@ -5,7 +5,7 @@ mod platform;
+ #[cfg(target_os = "windows")]
+ #[path = "windows/mod.rs"]
+ mod platform;
+-#[cfg(all(target_os = "linux", feature = "gtk"))]
++#[cfg(all(any(target_os = "linux", target_os = "freebsd"), feature = "gtk"))]
+ #[path = "gtk/mod.rs"]
+ mod platform;
+ #[cfg(target_os = "macos")]

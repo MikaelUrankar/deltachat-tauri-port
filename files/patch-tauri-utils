@@ -1,0 +1,23 @@
+--- cargo-crates/tauri-utils-2.8.1/src/platform.rs.orig	2026-03-26 12:35:18 UTC
++++ cargo-crates/tauri-utils-2.8.1/src/platform.rs
+@@ -329,6 +329,20 @@ fn resource_dir_from<P: AsRef<std::path::Path>>(
+     };
+   }
+ 
++  #[cfg(target_os = "freebsd")]
++  {
++    // (canonicalize checks for existence, so there's no need for an extra check)
++    res = if let Ok(bundle_dir) = exe_dir
++      .join(format!("../share/{}", package_info.name))
++      .canonicalize()
++    {
++      Ok(bundle_dir)
++    } else {
++      // running bundle
++      Ok(PathBuf::from(format!("%%PREFIX%%/share/{}", package_info.name)))
++    };
++  }
++
+   #[cfg(target_os = "macos")]
+   {
+     res = exe_dir
