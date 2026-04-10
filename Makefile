@@ -17,6 +17,7 @@ LIB_DEPENDS=	libayatana-appindicator3.so:devel/libayatana-appindicator \
 
 USES=		cargo electron:40,env gmake gnome nodejs:22,build pkgconfig ssl
 USE_GNOME=	cairo gdkpixbuf glib20 gtk30
+USE_GSTREAMER=	jepg v4l2
 
 USE_ELECTRON=	npm:pnpm prefetch extract
 NPM_VER=	9.6.0
