@@ -1,3 +1,7 @@
+From https://github.com/orgs/tauri-apps/discussions/8426
+
+https://github.com/orgs/tauri-apps/discussions/8426#discussioncomment-8268622
+
 --- cargo-crates/wry-0.53.5/src/webkitgtk/mod.rs.orig	2026-04-10 11:57:25 UTC
 +++ cargo-crates/wry-0.53.5/src/webkitgtk/mod.rs
 @@ -419,12 +419,24 @@ impl InnerWebView {
