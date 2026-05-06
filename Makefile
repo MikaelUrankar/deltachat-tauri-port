@@ -1,6 +1,6 @@
 PORTNAME=	deltachat-tauri
 DISTVERSIONPREFIX=	v
-DISTVERSION=	2.48.0
+DISTVERSION=	2.49.1
 CATEGORIES=	net-im
 
 MAINTAINER=	mikael@FreeBSD.org
@@ -15,7 +15,7 @@ LIB_DEPENDS=	libayatana-appindicator3.so:devel/libayatana-appindicator \
 		libsoup-3.0.so:devel/libsoup3 \
 		libwebkit2gtk-4.1.so:www/webkit2-gtk@41
 
-USES=		cargo electron:40,env gmake gnome nodejs:22,build pkgconfig ssl
+USES=		cargo electron:40,env gmake gnome nodejs:24,build pkgconfig ssl
 USE_GNOME=	cairo gdkpixbuf glib20 gtk30
 USE_GSTREAMER=	jepg v4l2
 
